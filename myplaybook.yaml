@@ -1,0 +1,18 @@
+---
+- hosts: webserver
+  name: Configure Nginx 
+  tasks:
+  - name: uninstall nginx 
+    apt: 
+        name: nginx=1.18*
+        state: absent
+    become: yes
+    become_user: root
+
+
+  - name: stop nginx 
+    service: 
+        name: nginx 
+        state: stopped
+    become: yes
+    become_user: root
