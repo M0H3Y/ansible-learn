@@ -1,0 +1,45 @@
+---
+- hosts: webserver 
+  name: Install Nodejs and npm 
+  become: yes 
+  become_user: root
+  vars_files:
+    - project-vars.yaml
+  tasks: 
+  - name: update apt repo and cache 
+    apt:
+      update_cache: yes
+      force_apt_get: yes 
+      cache_valid_time: 3600
+  - name: install nodejs and npm
+    apt: 
+     pkg: 
+      - nodejs 
+      - npm 
+    
+- hosts: webserver 
+  name: Deploy nodejs app
+  vars_files:
+    - project-vars.yaml
+  tasks:
+  - name: Copy nodejs tar file and untar it
+    unarchive:
+      src: "{{location}}"
+      dest: "{{dest}}"
+  - name: install dependencies 
+    npm: 
+     path: "{{dest}}/package/"
+    
+  - name: Start the application 
+    command:
+      chdir:  "{{dest}}/package/app"
+      cmd: node server
+    async: 1000
+    poll: 0
+
+  - name: ensure app is running 
+    shell: ps aux | grep node 
+    register: app_status
+
+  - debug: 
+      msg: "{{app_status.stdout_lines}}"
