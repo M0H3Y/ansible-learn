@@ -1,4 +1,18 @@
-- hosts: docker_server
+- hosts: all
+  name: Ensure SSH Connection Is Possible 
+  gather_facts: false
+  tasks: 
+    - name: Ensure SSH Port Open
+      wait_for: 
+         port: 22
+         delay: 10 
+         timeout: 120 
+         host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
+      vars: 
+       - ansible_connection: local 
+       - ansible_python_interpreter: /usr/bin/python
+
+- hosts: all
   name: Install Python3, Docker And Docker Compose
   become: yes
   tasks: 
@@ -8,7 +22,7 @@
       yum:  
         name:
          - python3 
-         - docker 
+         - docker
         state: present 
         update_cache: yes
     - name: Install Docker Compose 
@@ -18,7 +32,7 @@
         mode: +x
 
 
-- hosts: docker_server
+- hosts: all
   name: Start Docker 
   become: yes
   tasks:
@@ -26,13 +40,14 @@
       systemd:
         name: docker
         state: started
-    - name: Install Docker python module
+    - name: Install Docker python modules
       pip:
        name:
         - docker
         - docker-compose
+    
 
-- hosts: docker_server
+- hosts: all
   name: Add ec2-user To Docker Group 
   become: yes
   tasks:
@@ -45,7 +60,7 @@
       meta: reset_connection
     
 - name: Start Docker Container
-  hosts: docker_server 
+  hosts: all 
   vars_files:
      - project-vars.yaml
   tasks:
@@ -53,7 +68,7 @@
       copy:
         src: ../docker-compose.yaml
         dest: /home/ec2-user/
-    - name: Login To Dockerhub 
+    - name: Login To Dockerhub
       docker_login:
          registry_url: https://index.docker.io/v1/
          username: mohey 
