@@ -1,0 +1,54 @@
+---
+- hosts: all
+  name: Install Python3, Docker And Docker Compose
+  become: yes
+  tasks: 
+    - name: Install Python3 And Docker 
+      vars:
+        - ansible_python_interpreter: /usr/bin/python
+      yum:  
+        name:
+         - python3 
+         - docker
+        state: present 
+        update_cache: yes
+    - name: Install Docker Compose 
+      get_url:
+        url: "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-{{lookup('pipe','uname -m')}}"
+        dest: "/usr/local/bin/docker-compose"
+        mode: +x
+
+
+- hosts: all
+  name: Start Docker 
+  become: yes
+  tasks:
+    - name: Start Docker 
+      systemd:
+        name: docker
+        state: started
+    - name: Install Docker python modules
+      pip:
+       name:
+        - docker
+        - docker-compose
+    
+
+- hosts: all
+  name: Add ec2-user To Docker Group 
+  become: yes
+  tasks:
+    - name: Add ec2-user To Docker Group
+      user:
+       name: ec2-user 
+       groups: docker 
+       append: yes 
+    - name: Reconnect To Server Session 
+      meta: reset_connection
+    
+- name: Start Docker Container
+  hosts: all 
+  vars_files:
+     - project-vars.yaml
+  roles:
+    - start_containers

@@ -1,0 +1,39 @@
+version: '3.0'
+services:
+    mvn-app:
+       container_name: my-java-app
+       image: mohey/demo-app:1.1.3-23
+       ports: 
+         - 8080:8080
+       environment: 
+        - DB_USER=user
+        - DB_PASS=pass
+        - DB_SERVER=mysql
+        - DB_NAME=my-app-db 
+     
+    mysql:
+      image: mysql
+      container_name: mysql
+      ports: 
+        - 3306:3306
+      environment: 
+        - MYSQL_ROOT_PASSWORD=mypassword 
+        - MYSQL_DATABASE=my-app-db 
+        - MYSQL_USER=user
+        - MYSQL_PASSWORD=pass
+
+      volumes: 
+        - mysql-data:/var/lib/mysql 
+      
+    phpmyadmin:
+        image: phpmyadmin 
+        environment: 
+           PMA_HOST: mysql 
+
+        ports: 
+         - 8083:80
+        container_name: myadmin
+
+volumes:
+    mysql-data:
+

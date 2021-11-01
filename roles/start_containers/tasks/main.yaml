@@ -1,0 +1,14 @@
+- name: Copy Docker Compose File 
+  copy:
+    src: docker-compose.yaml
+    dest: /home/ec2-user/
+
+- name: Login To Dockerhub
+  docker_login:
+    registry_url: "{{docker_registry}}"
+    username: "{{docker_username}}}" 
+    password: "{{docker_password}}"
+
+- name: docker compose up 
+  docker_compose:
+    project_src: /home/ec2-user/
